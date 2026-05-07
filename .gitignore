@@ -1,0 +1,13 @@
+# build output
+sensor_monitor
+*.o
+*.out
+
+# logs
+logs/*.log
+
+# vscode
+.vscode/
+
+# system files
+.DS_Store
