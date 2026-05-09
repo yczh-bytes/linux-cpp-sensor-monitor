@@ -5,8 +5,8 @@
 //记录数据
 struct _data
 {
-    int data;
+    int id;
     double value;
     std::string unit;
-    std::string timestame;
+    std::string timestamp;
 };
