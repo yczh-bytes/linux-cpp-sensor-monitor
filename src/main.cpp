@@ -1,11 +1,18 @@
-#include "sensor_data.h"
-#include "thread_safe_queue.h"
+
+#include "../include/sensor_data.h"
+#include "../include/thread_safe_queue.h"
+
 #include <iostream>
-#include <chrono>
 #include <iomanip>
+#include <sstream>
+#include <string>
+#include <chrono>
+#include <ctime>
 #include <random>
 #include <thread>
-#include <string.h>
+#include <fstream>
+#include <filesystem>
+
 
 //时间戳生成函数
 std::string getTimestamp()
@@ -57,13 +64,45 @@ void sensorProducer(ThreadSafeQueue<_data>& q)
 
 }
 
-void sensorComsumer()
-{}
+void sensorComsumer(ThreadSafeQueue<_data>& q, std::ofstream& logFile)
+{
+    //写入日志文件
+    _data d;
+    while(q.pop(d))
+    {
+        if(d.value>35.0)
+        {
+            std::cout<<"Temperature too high!"<<std::endl;
+            logFile<<"Temperature too high!"<<std::endl;
+        }
+        else
+        {
+            std::cout<<"sensorid:"<<d.id<<","<<d.timestamp<<","<<d.value<<","<<d.unit<<std::endl;
+            logFile<<"sensorid:"<<d.id<<","<<d.timestamp<<","<<d.value<<","<<d.unit<<std::endl;
+        }
+    }
+}
 
 int main()
 {
+    //创建 logs 目录
+    std::filesystem::create_directory("../logs");
+    
+    //打开日志文件
+    std::ofstream logFile("../logs/sensor_data.log", std::ios::app);
+    
+    if(!logFile.is_open())
+    {
+        std::cerr<<"Failed to open log file"<<std::endl;
+        return 1;
+    }
+    
     ThreadSafeQueue<_data> q;
     sensorProducer(q);
+    sensorComsumer(q, logFile);
+    
+    //关闭日志文件
+    logFile.close();
+    
     return 0;
 }
-
